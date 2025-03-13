@@ -6,7 +6,7 @@ now=$(date "+%Y-%m-%d %H:%M:%S")
 
 # 错误处理函数
 handle_error() {
-    echo "发生错误，停止执行当前操作，但继续后续步骤。"
+    echo "发生错误，停止执行当前操作"
 }
 
 # 捕获错误并执行handle_error
