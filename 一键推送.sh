@@ -1,48 +1,50 @@
 #!/bin/bash
 
-# 捕获错误信息并处理
+# 一旦发生错误就停止脚本
+set -e
+
+# 错误处理函数（输出错误信息但不 exit）
 handle_error() {
     local exit_code=$?
     local failed_command=$BASH_COMMAND
-    echo ""
-    echo "发生错误！"
-    echo "命令：$failed_command"
-    echo "状态码：$exit_code"
-    echo "已中止后续操作。"
+    echo "发生错误："
+    echo "  命令：$failed_command"
+    echo "  状态码：$exit_code"
     
-    # 设置标志用于阻止后续命令执行
-    error_occurred=1
+    # 设置标记，防止执行后续命令
+    error_occurred=true
 }
 
-# 注册错误处理钩子
+# 捕获错误
 trap 'handle_error' ERR
-# 禁用 set -e，改为手动控制中止逻辑
-#set -e
-
-# 初始化控制标志
-error_occurred=0
 
 # 当前时间
 now=$(date "+%Y-%m-%d %H:%M:%S")
 
-# 流程开始
+# 错误标志初始化
+error_occurred=false
+
+# 开始流程
 echo "开始 add-commit-pull-push 流程"
 
-# 所有命令均用判断方式中止流程
-git checkout main || exit $?
-[[ $error_occurred -eq 1 ]] && read -p "按回车键关闭..." && exit
+git checkout main
+git add .
 
-git add . || exit $?
-[[ $error_occurred -eq 1 ]] && read -p "按回车键关闭..." && exit
+# 提交代码
+git commit -m "ver.$now"
 
-git commit -m "ver.$now" || exit $?
-[[ $error_occurred -eq 1 ]] && read -p "按回车键关闭..." && exit
+# 拉取远程更新
+git pull
 
-git pull || exit $?
-[[ $error_occurred -eq 1 ]] && read -p "按回车键关闭..." && exit
+# 推送到远程仓库
+git push
 
-git push || exit $?
-[[ $error_occurred -eq 1 ]] && read -p "按回车键关闭..." && exit
+# 如果过程中未出错，则输出成功消息
+if [ "$error_occurred" = false ]; then
+    echo "推送过程结束！可以关闭了"
+else
+    echo "流程中止，未完成所有步骤。"
+fi
 
-echo "推送过程结束！可以关闭了"
-read -p "按回车键关闭..."
+# 保持终端窗口
+read -p "按回车键退出..."
