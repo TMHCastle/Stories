@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # 一旦发生错误就停止脚本
-set -e
+
 
 # 错误处理函数（输出错误信息但不 exit）
 handle_error() {
